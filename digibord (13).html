@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOGST – De Tuin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#FAF6EF; font-family:'DM Sans',sans-serif; overflow:hidden; height:100vh; width:100vw; }
+    .hemel { position:fixed; inset:0; background:linear-gradient(180deg,#F9EFE8 0%,#FAF6EF 55%,#EDE5D8 100%); z-index:0; }
+    .wolk { position:absolute; border-radius:50%; background:rgba(255,255,255,0.45); filter:blur(40px); }
+    .grond { position:fixed; bottom:0; left:0; right:0; height:90px; background:linear-gradient(to top,#C8B89A,#D9CAB4); border-radius:40% 40% 0 0/20px 20px 0 0; z-index:5; }
+    .grond::before { content:""; position:absolute; top:-13px; left:0; right:0; height:26px; background:linear-gradient(to top,#7DAA6A,#9DC47D); border-radius:50% 50% 0 0/100% 100% 0 0; }
+    .tuin { position:fixed; bottom:90px; left:0; right:0; top:80px; z-index:3; }
+    .tuin.verborgen { filter:blur(18px) brightness(1.05); pointer-events:none; }
+    .tuin.verborgen .tuin-bloem { opacity:0.15; }
+    .titel-hoek { position:fixed; top:1.5rem; left:2.5rem; z-index:10; display:flex; align-items:baseline; gap:1.2rem; }
+    .titel-hoek h1 { font-family:'Fraunces',serif; font-weight:900; font-size:2.5rem; letter-spacing:-0.03em; color:#2C2416; opacity:0.18; }
+    .inzendingen-teller { font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:0.9rem; color:#9A8870; }
+    .knoppen-balk { position:fixed; top:1.2rem; right:1.5rem; z-index:20; display:flex; gap:0.6rem; align-items:center; }
+    .onthul-knop { background:#2C2416; color:#FAF6EF; font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:1rem; padding:0.5rem 1.4rem; border:none; border-radius:100px; cursor:pointer; transition:background 0.2s,transform 0.2s; }
+    .onthul-knop:hover { background:#D4744A; transform:scale(1.03); }
+    .onthul-knop.zichtbaar-staat { background:transparent; color:#A09080; border:1.5px solid #C8BAA8; font-family:'DM Sans',sans-serif; font-style:normal; font-size:0.75rem; }
+    .onthul-knop.zichtbaar-staat:hover { background:#2C2416; color:#FAF6EF; border-color:#2C2416; }
+    .reset-knop { background:transparent; border:1.5px solid #C8BAA8; color:#A09080; font-family:'DM Sans',sans-serif; font-size:0.75rem; padding:0.4rem 0.9rem; border-radius:100px; cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .reset-knop:hover { background:#2C2416; color:#FAF6EF; border-color:#2C2416; }
+    .wacht-overlay { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:12; text-align:center; pointer-events:none; transition:opacity 0.6s; }
+    .wacht-overlay.verborgen { opacity:0; }
+    .wacht-overlay h2 { font-family:'Fraunces',serif; font-weight:700; font-size:2rem; color:#2C2416; opacity:0.5; margin-bottom:0.4rem; }
+    .wacht-overlay p { font-size:0.9rem; color:#B8A898; }
+    .leeg-bericht { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; z-index:15; pointer-events:none; transition:opacity 0.8s; }
+    .leeg-bericht.verborgen { opacity:0; }
+    .leeg-bericht .groot-svg { width:80px; height:90px; margin:0 auto 1rem; overflow:hidden; }
+    .leeg-bericht h2 { font-family:'Fraunces',serif; font-weight:700; font-size:1.5rem; color:#A09080; margin-bottom:0.5rem; }
+    .leeg-bericht p { font-size:0.9rem; color:#B8A898; }
+    .tuin-bloem { position:absolute; bottom:0; display:flex; flex-direction:column; align-items:center; transform-origin:bottom center; animation:groei-in 0.8s cubic-bezier(0.34,1.56,0.64,1) both; cursor:default; }
+    @keyframes groei-in { from{transform:scaleY(0);opacity:0} to{transform:scaleY(1);opacity:1} }
+    .tuin-bloem:nth-child(odd)  { animation:groei-in 0.8s cubic-bezier(0.34,1.56,0.64,1) both, wiebel 4s ease-in-out infinite 1s; }
+    .tuin-bloem:nth-child(even) { animation:groei-in 0.8s cubic-bezier(0.34,1.56,0.64,1) both, wiebel 5s ease-in-out infinite 2s; }
+    @keyframes wiebel { 0%,100%{transform:rotate(0)} 25%{transform:rotate(1.5deg)} 75%{transform:rotate(-1.5deg)} }
+    .tuin-bloem-svg { display:block; overflow:hidden; }
+    .bloem-label { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%) translateY(4px); background:#2C2416; color:#FAF6EF; font-family:'DM Sans',sans-serif; font-size:0.7rem; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; padding:0.3rem 0.7rem; border-radius:100px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.15s ease,transform 0.15s ease; }
+    .tuin-bloem:hover .bloem-label { opacity:1; transform:translateX(-50%) translateY(0); }
+    .bloem-label::after { content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#2C2416; }
+  </style>
+</head>
+<body>
+<div class="hemel">
+  <div class="wolk" style="width:300px;height:200px;top:5%;left:10%"></div>
+  <div class="wolk" style="width:200px;height:150px;top:15%;right:15%"></div>
+  <div class="wolk" style="width:250px;height:180px;top:8%;left:50%"></div>
+</div>
+<div class="grond"></div>
+<div class="titel-hoek">
+  <h1>OOGST</h1>
+  <span class="inzendingen-teller" id="inzendingen-teller">verbinden…</span>
+</div>
+<div class="knoppen-balk">
+  <button class="onthul-knop" id="onthul-knop" onclick="toggleTuin()">Toon tuin</button>
+  <button class="reset-knop" onclick="resetTuin()">↺ Nieuwe les</button>
+</div>
+<div class="leeg-bericht" id="leeg-bericht">
+  <div class="groot-svg">
+    <svg viewBox="40 255 90 120" xmlns="http://www.w3.org/2000/svg" width="80" height="90">
+      <image href="bloemen.svg" x="0" y="0" width="612" height="760"/>
+    </svg>
+  </div>
+  <h2>De tuin is nog leeg</h2>
+  <p>Leerlingen kunnen nu hun boeket insturen via leerling.html</p>
+</div>
+<div class="wacht-overlay verborgen" id="wacht-overlay">
+  <h2>Leerlingen zijn aan het insturen…</h2>
+  <p>Klik "Toon tuin" als iedereen klaar is</p>
+</div>
+<div class="tuin verborgen" id="tuin"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAWDc4-qCewKSf3uKtrwyuav4z5wx8mIKw",
+    authDomain: "oogst-emotions.firebaseapp.com",
+    databaseURL: "https://oogst-emotions-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "oogst-emotions",
+    storageBucket: "oogst-emotions.firebasestorage.app",
+    messagingSenderId: "226895207258",
+    appId: "1:226895207258:web:52bec11876f7f5ec0bf163"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const BLOEMEN_DATA = {
+    blijdschap:    { naam:"Blijdschap",    vb:"33 74 90 120",   x:8  },
+    enthousiasme:  { naam:"Enthousiasme",  vb:"184 71 90 120",  x:16 },
+    trots:         { naam:"Trots",         vb:"375 65 90 120",  x:24 },
+    rust:          { naam:"Rust",          vb:"545 75 90 120",  x:32 },
+    opluchting:    { naam:"Opluchting",    vb:"40 255 90 120",  x:40 },
+    tevredenheid:  { naam:"Tevredenheid",  vb:"210 250 90 120", x:48 },
+    stress:        { naam:"Stress",        vb:"380 245 90 120", x:56 },
+    onzekerheid:   { naam:"Onzekerheid",   vb:"550 255 90 120", x:64 },
+    overweldiging: { naam:"Overweldiging", vb:"40 435 90 120",  x:72 },
+    verdriet:      { naam:"Verdriet",      vb:"210 425 90 120", x:80 },
+    eenzaamheid:   { naam:"Eenzaamheid",   vb:"380 430 90 120", x:88 },
+    boosheid:      { naam:"Boosheid",      vb:"550 435 90 120", x:95 },
+  };
+
+  const GROOTTE = { blijdschap:110, enthousiasme:130, trots:120, rust:140, opluchting:125, tevredenheid:135, stress:105, onzekerheid:145, overweldiging:120, verdriet:150, eenzaamheid:108, boosheid:100 };
+
+  let tuinZichtbaar = false;
+  let cache = [];
+
+  function maakSVG(vb, w, h) {
+    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
+      <image href="bloemen.svg" x="0" y="0" width="612" height="760"/>
+    </svg>`;
+  }
+
+  function tekenTuin(boeketten) {
+    const tuin = document.getElementById("tuin");
+    const leeg = document.getElementById("leeg-bericht");
+    const wacht = document.getElementById("wacht-overlay");
+    const teller = document.getElementById("inzendingen-teller");
+    const knop = document.getElementById("onthul-knop");
+    cache = boeketten;
+    tuin.innerHTML = "";
+
+    if (!boeketten || boeketten.length === 0) {
+      leeg.classList.remove("verborgen");
+      wacht.classList.add("verborgen");
+      teller.textContent = "wachten op leerlingen…";
+      tuinZichtbaar = false;
+      tuin.classList.add("verborgen");
+      knop.textContent = "Toon tuin";
+      knop.classList.remove("zichtbaar-staat");
+      return;
+    }
+
+    leeg.classList.add("verborgen");
+    teller.textContent = boeketten.length + (boeketten.length===1?" leerling":" leerlingen");
+    if (!tuinZichtbaar) wacht.classList.remove("verborgen");
+    else wacht.classList.add("verborgen");
+
+    const tellingen = {};
+    boeketten.forEach(b => b.bloemen.forEach(id => { tellingen[id]=(tellingen[id]||0)+1; }));
+
+    Object.entries(tellingen).forEach(([id, aantal]) => {
+      const data = BLOEMEN_DATA[id];
+      if (!data) return;
+      const basis = GROOTTE[id] || 110;
+
+      for (let i=0; i<aantal; i++) {
+        const jitter = (Math.random()-0.5)*5;
+        const schaal = 1 + Math.min(aantal*0.12, 0.8);
+        const h = Math.round(basis*schaal);
+        const w = Math.round(h*0.75);
+
+        const bloem = document.createElement("div");
+        bloem.classList.add("tuin-bloem");
+        bloem.style.left = (data.x+jitter)+"%";
+        bloem.style.animationDelay = (Math.random()*0.6)+"s";
+
+        const label = document.createElement("div");
+        label.classList.add("bloem-label");
+        label.textContent = data.naam;
+
+        const svgWrap = document.createElement("div");
+        svgWrap.classList.add("tuin-bloem-svg");
+        svgWrap.style.width = w+"px";
+        svgWrap.style.height = h+"px";
+        svgWrap.innerHTML = maakSVG(data.vb, w, h);
+
+        bloem.appendChild(label);
+        bloem.appendChild(svgWrap);
+        tuin.appendChild(bloem);
+      }
+    });
+  }
+
+  window.toggleTuin = function() {
+    const tuin = document.getElementById("tuin");
+    const knop = document.getElementById("onthul-knop");
+    const wacht = document.getElementById("wacht-overlay");
+    tuinZichtbaar = !tuinZichtbaar;
+    if (tuinZichtbaar) {
+      tuin.classList.remove("verborgen");
+      wacht.classList.add("verborgen");
+      knop.textContent = "Verberg tuin";
+      knop.classList.add("zichtbaar-staat");
+    } else {
+      tuin.classList.add("verborgen");
+      if (cache.length>0) wacht.classList.remove("verborgen");
+      knop.textContent = "Toon tuin";
+      knop.classList.remove("zichtbaar-staat");
+    }
+  };
+
+  const boekettenRef = ref(db,"boeketten");
+  onValue(boekettenRef, snap => {
+    const data = snap.val();
+    tekenTuin(data ? Object.values(data) : []);
+  });
+
+  window.resetTuin = async function() {
+    if (!confirm("Alle inzendingen wissen voor een nieuwe les?")) return;
+    await remove(boekettenRef);
+  };
+
+  window.addEventListener("resize", () => tekenTuin(cache));
+</script>
+</body>
+</html>

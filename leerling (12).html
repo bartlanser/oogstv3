@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OOGST – Hoe voel jij je?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --creme:#FAF6EF; --creme-2:#F2EBE0; --zand:#E8DDD0; --donker:#2C2416; --accent:#D4744A; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--creme); font-family:'DM Sans',sans-serif; color:var(--donker); min-height:100vh; }
+    header { padding:2.5rem 2rem 1.5rem; background:var(--creme); position:sticky; top:0; z-index:10; border-bottom:2px solid var(--zand); }
+    h1 { font-family:'Fraunces',serif; font-weight:900; font-size:clamp(2.8rem,8vw,5rem); line-height:0.9; letter-spacing:-0.02em; }
+    .ondertitel { font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:1.05rem; color:#7A6A58; margin-top:0.6rem; }
+    .teller-balk { display:flex; align-items:center; gap:0.75rem; margin-top:1.2rem; }
+    .bolletje { width:13px; height:13px; border-radius:50%; border:2px solid var(--donker); background:transparent; transition:background 0.3s; }
+    .bolletje.vol { background:var(--donker); }
+    .teller-tekst { font-size:0.85rem; font-weight:500; color:#7A6A58; }
+    .bloemen-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; padding:1.5rem; max-width:700px; margin:0 auto; }
+    @media(max-width:480px){ .bloemen-grid{ grid-template-columns:repeat(2,1fr); } }
+    .bloem-kaart { background:white; border:2px solid var(--zand); border-radius:16px; padding:1.2rem 0.8rem 0.8rem; display:flex; flex-direction:column; align-items:center; gap:0.5rem; cursor:pointer; user-select:none; transition:transform 0.2s ease,border-color 0.2s,background 0.2s,box-shadow 0.2s; }
+    .bloem-kaart:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+    .bloem-kaart.gekozen { border-color:var(--donker); background:var(--creme-2); transform:translateY(-4px) scale(1.03); box-shadow:0 8px 24px rgba(44,36,22,0.15); }
+    .bloem-kaart.uitgedoofd { opacity:0.3; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+    .bloem-icoon { width:80px; height:90px; display:block; overflow:hidden; transition:transform 0.3s ease; }
+    .bloem-kaart:not(.uitgedoofd):hover .bloem-icoon { transform:rotate(-5deg) scale(1.08); }
+    .bloem-kaart.gekozen .bloem-icoon { animation:schommel 0.4s ease; }
+    @keyframes schommel { 0%{transform:rotate(0)} 25%{transform:rotate(-10deg) scale(1.1)} 75%{transform:rotate(7deg) scale(1.1)} 100%{transform:rotate(0) scale(1)} }
+    .bloem-naam { font-weight:600; font-size:0.68rem; letter-spacing:0.09em; text-transform:uppercase; text-align:center; }
+    .vinkje { display:none; width:22px; height:22px; background:var(--donker); border-radius:50%; align-items:center; justify-content:center; color:white; font-size:0.7rem; font-weight:bold; }
+    .bloem-kaart.gekozen .vinkje { display:flex; animation:verschijn 0.3s ease; }
+    @keyframes verschijn { from{transform:scale(0)} to{transform:scale(1)} }
+    .verstuur-balk { position:sticky; bottom:0; background:linear-gradient(to top,var(--creme) 80%,transparent); padding:1.2rem 1.5rem 1.5rem; display:flex; justify-content:center; }
+    .verstuur-knop { background:var(--donker); color:var(--creme); font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:1.2rem; padding:1rem 3rem; border:none; border-radius:100px; cursor:pointer; transition:background 0.2s,transform 0.2s; opacity:0.3; pointer-events:none; }
+    .verstuur-knop.actief { opacity:1; pointer-events:auto; }
+    .verstuur-knop.actief:hover { background:var(--accent); transform:scale(1.03); }
+    .bevestiging { display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:70vh; padding:2rem; gap:1.5rem; }
+    .bevestiging.zichtbaar { display:flex; }
+    .bevestiging-bloemen { display:flex; gap:1.2rem; }
+    .bevestiging-bloemen .b-wrap { width:70px; height:80px; overflow:hidden; }
+    .bevestiging h2 { font-family:'Fraunces',serif; font-weight:700; font-size:2rem; }
+    .bevestiging p { font-size:1rem; color:#7A6A58; max-width:260px; }
+  </style>
+</head>
+<body>
+<div id="hoofdscherm">
+  <header>
+    <h1>OOGST</h1>
+    <p class="ondertitel">Kies drie bloemen die beschrijven hoe jij je de afgelopen periode hebt gevoeld.</p>
+    <div class="teller-balk">
+      <span class="bolletje" id="bol-1"></span>
+      <span class="bolletje" id="bol-2"></span>
+      <span class="bolletje" id="bol-3"></span>
+      <span class="teller-tekst" id="teller-tekst">0 van 3 gekozen</span>
+    </div>
+  </header>
+  <div class="bloemen-grid" id="bloemen-grid"></div>
+  <div class="verstuur-balk">
+    <button class="verstuur-knop" id="verstuur-knop" onclick="verstuurBoeket()">Verstuur boeket</button>
+  </div>
+</div>
+<div class="bevestiging" id="bevestiging">
+  <div class="bevestiging-bloemen" id="bevestiging-bloemen"></div>
+  <h2>Jouw boeket is verstuurd!</h2>
+  <p>Je keuzes zijn aan de tuin toegevoegd. Kijk straks samen op het digibord!</p>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, push, ref } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAWDc4-qCewKSf3uKtrwyuav4z5wx8mIKw",
+    authDomain: "oogst-emotions.firebaseapp.com",
+    databaseURL: "https://oogst-emotions-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "oogst-emotions",
+    storageBucket: "oogst-emotions.firebasestorage.app",
+    messagingSenderId: "226895207258",
+    appId: "1:226895207258:web:52bec11876f7f5ec0bf163"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Volgorde bewust gemixt — niet positief/negatief gegroepeerd
+  const BLOEMEN = [
+    { id:"blijdschap",    naam:"Blijdschap",    vb:"33 74 90 120"   },
+    { id:"stress",        naam:"Stress",        vb:"380 245 90 120" },
+    { id:"enthousiasme",  naam:"Enthousiasme",  vb:"184 71 90 120"  },
+    { id:"onzekerheid",   naam:"Onzekerheid",   vb:"550 255 90 120" },
+    { id:"trots",         naam:"Trots",         vb:"375 65 90 120"  },
+    { id:"overweldiging", naam:"Overweldiging", vb:"40 435 90 120"  },
+    { id:"rust",          naam:"Rust",          vb:"545 75 90 120"  },
+    { id:"verdriet",      naam:"Verdriet",      vb:"210 425 90 120" },
+    { id:"opluchting",    naam:"Opluchting",    vb:"40 255 90 120"  },
+    { id:"eenzaamheid",   naam:"Eenzaamheid",   vb:"380 430 90 120" },
+    { id:"tevredenheid",  naam:"Tevredenheid",  vb:"210 250 90 120" },
+    { id:"boosheid",      naam:"Boosheid",      vb:"550 435 90 120" },
+  ];
+
+  // bloemen.svg is de schone versie zonder tekst
+  function maakSVG(vb, w=80, h=90) {
+    return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
+      <image href="bloemen.svg" x="0" y="0" width="612" height="760"/>
+    </svg>`;
+  }
+
+  let gekozen = new Set();
+  const MAX = 3;
+
+  function renderBloemen() {
+    const grid = document.getElementById("bloemen-grid");
+    grid.innerHTML = "";
+    BLOEMEN.forEach(b => {
+      const kaart = document.createElement("div");
+      kaart.classList.add("bloem-kaart");
+      kaart.id = "kaart-" + b.id;
+      kaart.innerHTML = `
+        <div class="vinkje">✓</div>
+        <div class="bloem-icoon">${maakSVG(b.vb)}</div>
+        <div class="bloem-naam">${b.naam}</div>
+      `;
+      kaart.addEventListener("click", () => toggleBloem(b.id));
+      grid.appendChild(kaart);
+    });
+  }
+
+  function toggleBloem(id) {
+    if (gekozen.has(id)) { gekozen.delete(id); }
+    else { if (gekozen.size >= MAX) return; gekozen.add(id); }
+    updateUI();
+  }
+
+  function updateUI() {
+    const n = gekozen.size;
+    for (let i=1;i<=3;i++) document.getElementById("bol-"+i).classList.toggle("vol", i<=n);
+    document.getElementById("teller-tekst").textContent = n + " van 3 gekozen";
+    BLOEMEN.forEach(b => {
+      const k = document.getElementById("kaart-"+b.id);
+      k.classList.toggle("gekozen", gekozen.has(b.id));
+      k.classList.toggle("uitgedoofd", n>=MAX && !gekozen.has(b.id));
+    });
+    document.getElementById("verstuur-knop").classList.toggle("actief", n===MAX);
+  }
+
+  window.verstuurBoeket = async function() {
+    if (gekozen.size < MAX) return;
+    const knop = document.getElementById("verstuur-knop");
+    knop.textContent = "Versturen…"; knop.style.opacity="0.6"; knop.style.pointerEvents="none";
+    try {
+      await push(ref(db,"boeketten"), { tijdstip:Date.now(), bloemen:Array.from(gekozen) });
+      toonBevestiging();
+    } catch(e) {
+      knop.textContent="Probeer opnieuw"; knop.style.opacity="1"; knop.style.pointerEvents="auto";
+    }
+  };
+
+  function toonBevestiging() {
+    document.getElementById("hoofdscherm").style.display="none";
+    document.getElementById("bevestiging").classList.add("zichtbaar");
+    const container = document.getElementById("bevestiging-bloemen");
+    gekozen.forEach(id => {
+      const b = BLOEMEN.find(x=>x.id===id);
+      const wrap = document.createElement("div");
+      wrap.classList.add("b-wrap");
+      wrap.innerHTML = maakSVG(b.vb, 70, 80);
+      container.appendChild(wrap);
+    });
+  }
+
+  renderBloemen();
+  updateUI();
+</script>
+</body>
+</html>
