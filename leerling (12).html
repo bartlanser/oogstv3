@@ -82,23 +82,22 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Volgorde bewust gemixt — niet positief/negatief gegroepeerd
+  // viewBox coördinaten berekend op basis van exacte Illustrator-posities
   const BLOEMEN = [
     { id:"blijdschap",    naam:"Blijdschap",    vb:"33 74 90 120"   },
-    { id:"stress",        naam:"Stress",        vb:"380 245 90 120" },
+    { id:"stress",        naam:"Stress",        vb:"330 288 90 120" },
     { id:"enthousiasme",  naam:"Enthousiasme",  vb:"184 71 90 120"  },
-    { id:"onzekerheid",   naam:"Onzekerheid",   vb:"550 255 90 120" },
+    { id:"onzekerheid",   naam:"Onzekerheid",   vb:"493 234 90 120" },
     { id:"trots",         naam:"Trots",         vb:"375 65 90 120"  },
-    { id:"overweldiging", naam:"Overweldiging", vb:"40 435 90 120"  },
-    { id:"rust",          naam:"Rust",          vb:"545 75 90 120"  },
-    { id:"verdriet",      naam:"Verdriet",      vb:"210 425 90 120" },
-    { id:"opluchting",    naam:"Opluchting",    vb:"40 255 90 120"  },
+    { id:"overweldiging", naam:"Overweldiging", vb:"32 413 90 120"  },
+    { id:"rust",          naam:"Rust",          vb:"512 46 90 120"  },
+    { id:"verdriet",      naam:"Verdriet",      vb:"185 429 90 120" },
+    { id:"opluchting",    naam:"Opluchting",    vb:"34 228 90 120"  },
     { id:"eenzaamheid",   naam:"Eenzaamheid",   vb:"380 430 90 120" },
-    { id:"tevredenheid",  naam:"Tevredenheid",  vb:"210 250 90 120" },
-    { id:"boosheid",      naam:"Boosheid",      vb:"550 435 90 120" },
+    { id:"tevredenheid",  naam:"Tevredenheid",  vb:"176 253 90 120" },
+    { id:"boosheid",      naam:"Boosheid",      vb:"478 465 90 120" },
   ];
 
-  // bloemen.svg is de schone versie zonder tekst
   function maakSVG(vb, w=80, h=90) {
     return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
       <image href="bloemen.svg" x="0" y="0" width="612" height="760"/>
